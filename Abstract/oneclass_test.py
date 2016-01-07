@@ -44,12 +44,14 @@ import random
 def oneclasstest_fraction(fraction=0.1,repeats=2):
     # choosing some graphs, 
     # having array to save results
-
+    
+    repeatresgood=[]
+    repeatresstd=[]
     
     for i in range(repeats):
         badscores=[]
         goodscores=[]
-        graphs = get_sequences_with_names(size=923)
+        graphs = get_sequences_with_names(size=100)
         graphs,not_used = random_bipartition_iter(graphs,fraction,random_state=random.random()*i*1000)
 
         estimator=Wrapper( nu=.27, cv=3, n_jobs=-1)
@@ -73,7 +75,11 @@ def oneclasstest_fraction(fraction=0.1,repeats=2):
                 goodscores.append(score)
             else:
                 badscores.append(score)
-
+                
+        
+        repeatresgood+=numpy.mean(goodscores)/numpy.mean(badscores)
+        repeatedresstd+=numpy.std(goodscores+badscores)   
+        '''
         print "afraction=%f , instances=%f, good=%d , bad=%d" % (fraction,fraction*923,len(goodscores),len(badscores))
         a= numpy.array(badscores)
         print 'bad:mean/std ',numpy.mean(a, axis=0),' ',numpy.std(a, axis=0)
@@ -84,6 +90,20 @@ def oneclasstest_fraction(fraction=0.1,repeats=2):
         a= numpy.array(goodscores+badscores)
         print 'dbad+good:mean/std ',numpy.mean(a, axis=0),' ',numpy.std(a, axis=0)
         print ''
-    
-for fraction in [0.1,0.25,0.5,0.75,1.0]:
-        oneclasstest_fraction(fraction,repeats=5)
+        '''
+    return numpy.mean(repeatresgood),numpy.mean(repeatresstd)
+        
+        
+        
+goods=[]
+means=[]
+fracs=range(1,11)
+         
+for frac in fracs:
+        fraction=frac*.1
+        good, mean = oneclasstest_fraction(fraction,repeats=5)
+        goods.append(good)
+        means.append(mean)
+import pylab
+bars = pylab.bar(fracs, goods, color='#88aa33', align='center')
+line = pylab.plot(x, means, 'bo-')
